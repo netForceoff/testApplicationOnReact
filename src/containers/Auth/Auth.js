@@ -3,6 +3,7 @@ import './Auth.css'
 import Button from '../../components/UI/Button/Button'
 import Input from '../../components/UI/input/input'
 import is from 'is_js' // Блиблиотека на проверку регулярок
+import axios from 'axios'
 
 // function validateEmail(email) {
 //     var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -41,12 +42,33 @@ export default class Auth extends React.Component {
         }
     }
 
-    loginHandler = () => {
-
+    loginHandler = async () => {
+        const authData = {
+            email: this.state.formControls.email.value,
+            password: this.state.formControls.password.value,
+            returnSecureToken: true
+        }
+        try {
+            const response = await axios.post('https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyDRZsEVw7qOAw-OPsR05baJL8X-OJDT36Q', authData) // AIzaSyDRZsEVw7qOAw-OPsR05baJL8X-OJDT36Q - ключ, берется из проекта в firebase
+            console.log(response.data)
+        } catch (e) {
+          console.log(e)  
+        }
     }
 
-    registerHandler = () => {
-
+    registerHandler = async () => {
+        //POST должен вернуть returnSecureToken, поэтому создадим объект
+        const authData = {
+            email: this.state.formControls.email.value,
+            password: this.state.formControls.password.value,
+            returnSecureToken: true
+        }
+        try {
+            const response = await axios.post('https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDRZsEVw7qOAw-OPsR05baJL8X-OJDT36Q', authData) // AIzaSyDRZsEVw7qOAw-OPsR05baJL8X-OJDT36Q - ключ, берется из проекта в firebase
+            console.log(response.data)
+        } catch (e) {
+          console.log(e)  
+        }
     }
 
     submitHandler = event => {
