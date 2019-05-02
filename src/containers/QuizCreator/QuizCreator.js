@@ -4,6 +4,7 @@ import Button from '../../components/UI/Button/Button'
 import Input from '../../components/UI/input/input'
 import Select from '../../components/UI/Select/Select'
 import {createControl, validate, validateForm} from '../../form/formFramework'
+import axios from '../../axios/axios-quiz'
 
 function createOptionControl(number) {
     return createControl({
@@ -72,9 +73,31 @@ export default class QuizCreator extends React.Component {
         })
     }
 
-    createQuizHandler = event => {
+    createQuizHandler = async event => {
         event.preventDefault()
+        // async - делает запрос ассинхронным
+
+        try {
+            await axios.post('quises.json', this.state.quiz)
+            //await распрасит данный promise и положит его в переменную, что получилось
+            this.setState({ // Обнуляем страницу после создания теста, чтобы повторные данные не отправились на серв
+                quiz: [],
+                rightAnswerId: 1,
+                isFormValid: false,
+                formControls: createFormControls()
+            })
+
+        }catch (e) {
+            console.log(e)
+        }
+       
+            // .then(response => {
+            //     console.log(response)
+            // })
+            // .catch(error => console.log(error))
+
         console.log(this.state.quiz)
+
     }
 
     changeHandler = (value, controlName) => {
