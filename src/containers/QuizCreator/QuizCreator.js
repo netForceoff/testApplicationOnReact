@@ -27,13 +27,24 @@ function createFormControls() { // Для обнуления formControls пос
     }
 }
 
+function createNameControls() {
+    return {
+        testName: createControl({
+            label: 'Введите название теста',
+            errorMessage: 'Поле не может быть пустым'
+        }, {required: true})
+    }
+}
+
 export default class QuizCreator extends React.Component {
 
     state = {
         rightAnswerId: 1,
         isFormValid: false,
         quiz: [], // Массив для хранения вопросов
-        formControls: createFormControls() // Создали изначальный объект с вопросами
+        formControls: createFormControls(), // Создали изначальный объект с вопросами
+        testName: createNameControls(),
+        isName: false
     }
 
 
@@ -50,9 +61,11 @@ export default class QuizCreator extends React.Component {
         const index = quiz.length + 1
 
         const {question, option1, option2, option3, option4} = this.state.formControls
+        const testName = this.state.testName
 
         const questionItem = {
             question: question.value,
+            quizName: testName.testName.value, // Добавили имя тесту
             id: index,
             rightAnswerId: this.state.rightAnswerId,
             answers: [
@@ -84,7 +97,9 @@ export default class QuizCreator extends React.Component {
                 quiz: [],
                 rightAnswerId: 1,
                 isFormValid: false,
-                formControls: createFormControls()
+                formControls: createFormControls(),
+                testName: createNameControls(),
+                isName: false
             })
 
         }catch (e) {
@@ -116,6 +131,18 @@ export default class QuizCreator extends React.Component {
         })
     }
 
+    changeName = value => {
+        const testName = {...this.state.testName}
+        testName.testName.touched = true
+        testName.testName.value = value
+        testName.testName.valid = validate(testName.testName.value, testName.testName.validation)
+
+        this.setState({
+            testName,
+            isFormValid: validateForm(testName)
+        })
+    }
+
     selectChangeHandler = event => {
         console.log(event.target.value)
         this.setState({
@@ -123,26 +150,54 @@ export default class QuizCreator extends React.Component {
         })
     }
 
-    renderControls() {
-        return Object.keys(this.state.formControls).map((controlName, index) => {
-            const control = this.state.formControls[controlName] // Создали переменную, также как в авторизации с определенным вопросом
-
-            return (
-                <React.Fragment key = {controlName + index}>
-                    <Input
-                        key = {controlName + index}
-                        label = {control.label}
-                        value = {control.value}
-                        valid = {control.valid}
-                        shouldValidate = {!!control.validation}
-                        touched = {control.touched}
-                        errorMessage = {control.errorMessage}
-                        onChange = {event => this.changeHandler(event.target.value, controlName)}
-                    />
-                    {index === 0 ? <hr /> : null}
-                </React.Fragment>
-            )
+    addNameHandler = () => {
+        this.setState({
+            isName: true
         })
+    }
+
+    renderControls() {
+        if (!this.state.isName) {
+            const name = this.state.testName
+          return  <React.Fragment>
+            <Input
+                label = {name.testName.label}
+                value = {name.testName.value}
+                valid = {name.testName.valid}
+                shouldValidate = {!!name.testName.validation}
+                touched = {name.testName.touched}
+                errorMessage = {name.testName.errorMessage}
+                onChange = {event => this.changeName(event.target.value)}
+            />
+            <Button
+            type = "primary"
+            disabled = {!this.state.isFormValid}
+            onClick = {this.addNameHandler}
+            >
+                Добавить имя
+            </Button>
+            </React.Fragment>
+        } else {
+            return Object.keys(this.state.formControls).map((controlName, index) => {
+                const control = this.state.formControls[controlName] // Создали переменную, также как в авторизации с определенным вопросом
+
+                return (
+                    <React.Fragment key = {controlName + index}>
+                        <Input
+                            key = {controlName + index}
+                            label = {control.label}
+                            value = {control.value}
+                            valid = {control.valid}
+                            shouldValidate = {!!control.validation}
+                            touched = {control.touched}
+                            errorMessage = {control.errorMessage}
+                            onChange = {event => this.changeHandler(event.target.value, controlName)}
+                        />
+                        {index === 0 ? <hr /> : null}
+                    </React.Fragment>
+                )
+            })
+        }
     }
 
     render() {
@@ -166,18 +221,26 @@ export default class QuizCreator extends React.Component {
                         
                         {this.renderControls()}
 
-                        {select}
-                        <Button 
-                        type = "primary"
-                        disabled = {!this.state.isFormValid}
-                        onClick = {this.addQuestionHandler}
-                        >Добавить вопрос</Button>
 
-                        <Button 
-                        type = "success"
-                        disabled = {this.state.quiz.length === 0}
-                        onClick = {this.createQuizHandler}
-                        >Создать тест</Button>
+                        {this.state.isName ? select :null}
+
+                        {
+                            this.state.isName ?
+                            <>
+                            <Button 
+                                type = "primary"
+                                disabled = {!this.state.isFormValid}
+                                onClick = {this.addQuestionHandler}
+                                >Добавить вопрос</Button>
+                            <Button 
+                                type = "success"
+                                disabled = {this.state.quiz.length === 0}
+                                onClick = {this.createQuizHandler}
+                                >Создать тест</Button>
+                                </>
+                            : null
+                        }
+                        
                     </form>
                 </div>
             </div>

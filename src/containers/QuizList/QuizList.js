@@ -30,19 +30,18 @@ export default class QuizList extends React.Component {
         //В пути нужно прописать json формат, чтобы получить объект, дать понять что мы работаем с json
         try {
             const response = await axios.get('quises.json')
-
             const quizes = []
             Object.keys(response.data).forEach((key, index) => {
+                console.log(response.data[key])
                 quizes.push({
                     id: key,
-                    name: `Тест №${index + 1}`
+                    name: response.data[key][0].quizName
                 })
             })
             this.setState({
                 quizes,
                 loading: false
             })
-            console.log(this.state.quizes)
         } catch (e) {
             console.log(e)
         }
