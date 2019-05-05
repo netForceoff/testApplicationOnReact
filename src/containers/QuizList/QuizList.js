@@ -1,18 +1,13 @@
 import React from 'react'
 import './QuizList.css'
 import {NavLink} from 'react-router-dom'
-import axios from '../../axios/axios-quiz'
 import Loader from '../../components/UI/Loader/Loader'
+import {connect} from 'react-redux'
+import {fetchQuizes} from '../../store/actions/actions'
 
-export default class QuizList extends React.Component {
-
-    state = {
-        quizes: [],
-        loading: true
-    }
-
+class QuizList extends React.Component {
     renderQuizes() {
-        return this.state.quizes.map((quiz) => {
+        return this.props.quizes.map((quiz) => {
             return (
                 <li
                 key = {quiz.id}
@@ -25,27 +20,10 @@ export default class QuizList extends React.Component {
         })
     }
 
-    async componentDidMount() { // Отвечает за запуск кода, после прогрузки DOM дерева, получать сервер нужно имеено после
+    componentDidMount() { // Отвечает за запуск кода, после прогрузки DOM дерева, получать сервер нужно имеено после
         //загрузки DOM, иначе полезут ошибки
         //В пути нужно прописать json формат, чтобы получить объект, дать понять что мы работаем с json
-        try {
-            const response = await axios.get('quises.json')
-            const quizes = []
-            Object.keys(response.data).forEach((key, index) => {
-                console.log(response.data[key])
-                quizes.push({
-                    id: key,
-                    name: response.data[key][0].quizName
-                })
-            })
-            this.setState({
-                quizes,
-                loading: false
-            })
-        } catch (e) {
-            console.log(e)
-        }
-      
+        this.props.fetchQuizes()   
     }
 
     render() {
@@ -55,7 +33,7 @@ export default class QuizList extends React.Component {
                         <h1>Список тестов</h1>
 
                         {
-                            this.state.loading
+                            this.props.loading || this.props.quizes.length === 0 // При подключении Redux могут возникать ошибки
                             ? <Loader />
                             : <ul>
                                 {this.renderQuizes()}
@@ -67,3 +45,18 @@ export default class QuizList extends React.Component {
         )
     }
 }
+
+function mapStateToProps(state) {
+    return {
+        quizes: state.quizes,
+        loading: state.loading
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        fetchQuizes: () => dispatch(fetchQuizes())
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(QuizList)
