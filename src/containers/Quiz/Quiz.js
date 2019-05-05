@@ -4,114 +4,21 @@ import React from 'react'
 import './Quiz.css'
 import ActiveQuiz from '../../components/ActiveQuiz/ActiveQuiz'
 import FinishedQuiz from '../../components/FinishedQuiz/FinishedQuiz'
-import axios from '../../axios/axios-quiz'
+import {connect} from 'react-redux'
 import Loader from '../../components/UI/Loader/Loader'
+import {fetchQuizById, onAnswerCLickHandlerQuiz, onRetryAnswerQuiz} from '../../store/actions/actions'
 
 class Quiz extends React.Component {
-    state = {
-        results: {}, // Объект вывода результатов, крест или галка
-        isFinished: false,
-        activeQuestion: 0, // Переключатель между вопросами
-        answerState: null, // { [id]: 'succes' 'error' } Принимает класс с цветом, чтобы показать ошибка или нет
-        quiz: [ // Массив, в котором будут содержаться все вопросы теста
-            // {
-            //     question: 'Какого цвета тетрадь?',
-            //     rightAnswerId: 2, // Какой правильный ответ, сравнение с id текста
-            //     id: 1,
-            //     answers: [
-            //         {text: 'Зеленый', id: 1},
-            //         {text: 'Красный', id: 2},
-            //         {text: 'Черный', id: 3},
-            //         {text: 'Голубой', id: 4}
-            //     ]
-            // },
-            // {
-            //     question: 'Какой сегодня день?',
-            //     rightAnswerId: 4, // Какой правильный ответ, сравнение с id текста
-            //     id: 2,
-            //     answers: [
-            //         {text: 'Унылый', id: 1},
-            //         {text: 'Веселый', id: 2},
-            //         {text: 'Озорной', id: 3},
-            //         {text: 'Нейтральный', id: 4}
-            //     ]
-            // }
-        ],
-        loading: true
-         
+    onRetryAnswer = () => {        
     }
 
-    onRetryAnswer = () => {
-        const timeOut = window.setTimeout(() => {
-            this.setState({
-                isFinished: false,
-                activeQuestion: 0,
-                answerState: null
-            })
 
-            window.clearTimeout(timeOut)
-        }, 1000)
-
-        
+    componentDidMount() {
+        this.props.fetchQuizById(this.props.match.params.id)
     }
 
-    onAnswerCLickHandler = answerId => {
-        console.log('Answer Id', answerId);
-        if (this.state.answerState) { // Убирание дабл клика на правильный ответ
-            const key = Object.keys(this.state.answerState)[0]; // Преобразование в массив, т.к в answerState - объект, получаем 1 й элемент
-            if (this.state.answerState[key] === 'success') {
-                return
-            }
-        }
-
-        const question = this.state.quiz[this.state.activeQuestion] // Получаем текущий объект с вопросами
-        const results = this.state.results;
-
-        if (question.rightAnswerId === answerId) {
-            if (!results[question.id]) {
-                results[question.id] = 'success'
-            }
-            this.setState({
-                answerState: {[answerId]: 'success'},
-                results
-            })
-
-            const  timeout = window.setTimeout(() => {
-                if ((this.state.activeQuestion + 1) === this.state.quiz.length) {
-                    this.setState({
-                        isFinished: true
-                    })
-                } else {
-                    this.setState({
-                        activeQuestion: this.state.activeQuestion + 1,
-                        answerState: null
-                    })
-                }
-
-            window.clearTimeout(timeout); // Чтобы не было утечки памяти, и чтобы выключить timeout, как только закончится эта функция  
-            }, 1000)
-
-           
-        } else {
-            results[question.id] = 'error'
-            this.setState({
-                answerState: {[answerId]: 'error'},
-                results
-            })
-        }
-    }
-
-    async componentDidMount() {
-        console.log('THIS ID = ' + this.props.match.params.id) // Проверить, совпвдвет ли id теста с id в переходе на страницу в поисковике
-        try {
-            const response = await axios.get(`/quises/${this.props.match.params.id}.json`) // Получает объект с тестом по id
-            this.setState({
-                quiz: response.data, // Записывается сам объект теста в массив, как мы его создали
-                loading: false
-            })
-        }catch (e) {
-            console.log(e)
-        }
+    componentWillUnmount() { // Когда произойдет уход со страницы, тесты обнулятся и все по новой // componentWillUnmount - когда происходит уход со страницы
+        this.props.onRetryAnswerQuiz()
     }
 
     render() {
@@ -121,21 +28,21 @@ class Quiz extends React.Component {
                     <h1>Тест</h1>
 
                     {
-                        this.state.loading
+                        this.props.loading || !this.props.quiz
                         ? <Loader />
-                        : this.state.isFinished   
+                        : this.props.isFinished   
                         ? <FinishedQuiz
-                        quizArray = {this.state.quiz}
-                        results = {this.state.results}
-                        onRetry = {this.onRetryAnswer}   
+                        quizArray = {this.props.quiz}
+                        results = {this.props.results}
+                        onRetry = {this.props.onRetryAnswerQuiz}   
                         />
                         : <ActiveQuiz
-                            question = {this.state.quiz[this.state.activeQuestion].question}
-                            answers = {this.state.quiz[this.state.activeQuestion].answers}
-                            onAnswerClick = {this.onAnswerCLickHandler}
-                            quizLength = {this.state.quiz.length}
-                            answerNumber = {this.state.activeQuestion + 1}
-                            state = {this.state.answerState}
+                            question = {this.props.quiz[this.props.activeQuestion].question}
+                            answers = {this.props.quiz[this.props.activeQuestion].answers}
+                            onAnswerClick = {this.props.onAnswerCLickHandlerQuiz}
+                            quizLength = {this.props.quiz.length}
+                            answerNumber = {this.props.activeQuestion + 1}
+                            state = {this.props.answerState}
                             />
                     }
                 </div>
@@ -144,4 +51,24 @@ class Quiz extends React.Component {
     }
 }
 
-export default Quiz
+
+function mapStateToProps(state) {
+    return {
+        results: state.results,
+        isFinished: state.isFinished,
+        activeQuestion: state.activeQuestion, 
+        answerState: state.answerState,
+        quiz: state.quiz,
+        loading: state.loading
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        fetchQuizById: numberId => dispatch(fetchQuizById(numberId)),
+        onAnswerCLickHandlerQuiz: answerId => dispatch(onAnswerCLickHandlerQuiz(answerId)),
+        onRetryAnswerQuiz: () => dispatch(onRetryAnswerQuiz())
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Quiz)
