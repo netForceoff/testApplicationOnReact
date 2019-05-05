@@ -3,7 +3,7 @@ import './QuizList.css'
 import {NavLink} from 'react-router-dom'
 import Loader from '../../components/UI/Loader/Loader'
 import {connect} from 'react-redux'
-import {fetchQuizes} from '../../store/actions/actions'
+import {fetchQuizes} from '../../store/actions/quizList'
 
 class QuizList extends React.Component {
     renderQuizes() {
@@ -48,8 +48,8 @@ class QuizList extends React.Component {
 
 function mapStateToProps(state) {
     return {
-        quizes: state.quizes,
-        loading: state.loading
+        quizes: state.quizListReduce.quizes,
+        loading: state.quizListReduce.loading
     }
 }
 

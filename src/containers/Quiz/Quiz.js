@@ -6,7 +6,7 @@ import ActiveQuiz from '../../components/ActiveQuiz/ActiveQuiz'
 import FinishedQuiz from '../../components/FinishedQuiz/FinishedQuiz'
 import {connect} from 'react-redux'
 import Loader from '../../components/UI/Loader/Loader'
-import {fetchQuizById, onAnswerCLickHandlerQuiz, onRetryAnswerQuiz} from '../../store/actions/actions'
+import {fetchQuizById, onAnswerCLickHandlerQuiz, onRetryAnswerQuiz} from '../../store/actions/quiz'
 
 class Quiz extends React.Component {
     onRetryAnswer = () => {        
@@ -54,12 +54,12 @@ class Quiz extends React.Component {
 
 function mapStateToProps(state) {
     return {
-        results: state.results,
-        isFinished: state.isFinished,
-        activeQuestion: state.activeQuestion, 
-        answerState: state.answerState,
-        quiz: state.quiz,
-        loading: state.loading
+        results: state.quizReduce.results,
+        isFinished: state.quizReduce.isFinished,
+        activeQuestion: state.quizReduce.activeQuestion, 
+        answerState: state.quizReduce.answerState,
+        quiz: state.quizReduce.quiz,
+        loading: state.quizReduce.loading
     }
 }
 

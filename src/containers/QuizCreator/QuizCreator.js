@@ -4,7 +4,8 @@ import Button from '../../components/UI/Button/Button'
 import Input from '../../components/UI/input/input'
 import Select from '../../components/UI/Select/Select'
 import {createControl, validate, validateForm} from '../../form/formFramework'
-import axios from '../../axios/axios-quiz'
+import {connect} from 'react-redux'
+import {createQuizQuestion, finishCreateQuiz} from '../../store/actions/create'
 
 function createOptionControl(number) {
     return createControl({
@@ -36,12 +37,11 @@ function createNameControls() {
     }
 }
 
-export default class QuizCreator extends React.Component {
+class QuizCreator extends React.Component {
 
     state = {
         rightAnswerId: 1,
         isFormValid: false,
-        quiz: [], // Массив для хранения вопросов
         formControls: createFormControls(), // Создали изначальный объект с вопросами
         testName: createNameControls(),
         isName: false
@@ -56,17 +56,13 @@ export default class QuizCreator extends React.Component {
     addQuestionHandler = event => {
         event.preventDefault()
 
-        const quiz = this.state.quiz.concat()
-        console.log(quiz)
-        const index = quiz.length + 1
-
         const {question, option1, option2, option3, option4} = this.state.formControls
         const testName = this.state.testName
 
         const questionItem = {
             question: question.value,
             quizName: testName.testName.value, // Добавили имя тесту
-            id: index,
+            id: this.props.quiz.length + 1,
             rightAnswerId: this.state.rightAnswerId,
             answers: [
                 {text: option1.value, id: option1.id},
@@ -76,22 +72,18 @@ export default class QuizCreator extends React.Component {
             ]
         }
 
-        quiz.push(questionItem)
+        this.props.createQuizQuestion(questionItem)
 
         this.setState({
-            quiz,
             rightAnswerId: 1,
             isFormValid: false,
             formControls: createFormControls()
         })
     }
 
-    createQuizHandler = async event => {
+    createQuizHandler = event => {
         event.preventDefault()
         // async - делает запрос ассинхронным
-
-        try {
-            await axios.post('quises.json', this.state.quiz)
             //await распрасит данный promise и положит его в переменную, что получилось
             this.setState({ // Обнуляем страницу после создания теста, чтобы повторные данные не отправились на серв
                 quiz: [],
@@ -102,8 +94,8 @@ export default class QuizCreator extends React.Component {
                 isName: false
             })
 
-        }catch (e) {
-            console.log(e)
+            this.props.finishCreateQuiz()
+            console.log(this.props.quiz)
         }
        
             // .then(response => {
@@ -111,9 +103,6 @@ export default class QuizCreator extends React.Component {
             // })
             // .catch(error => console.log(error))
 
-        console.log(this.state.quiz)
-
-    }
 
     changeHandler = (value, controlName) => {
         const formControls = {...this.state.formControls} 
@@ -234,7 +223,7 @@ export default class QuizCreator extends React.Component {
                                 >Добавить вопрос</Button>
                             <Button 
                                 type = "success"
-                                disabled = {this.state.quiz.length === 0}
+                                disabled = {this.props.quiz.length === 0}
                                 onClick = {this.createQuizHandler}
                                 >Создать тест</Button>
                                 </>
@@ -247,3 +236,18 @@ export default class QuizCreator extends React.Component {
         )
     }
 }
+
+function mapStateToProps(state) {
+    return {
+        quiz: state.createReducer.quiz
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        createQuizQuestion: item => dispatch(createQuizQuestion(item)),
+        finishCreateQuiz: () => dispatch(finishCreateQuiz())
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(QuizCreator)

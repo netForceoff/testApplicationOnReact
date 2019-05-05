@@ -7,7 +7,7 @@ import {Provider} from 'react-redux'
 import reduxThunk from 'redux-thunk'
 import {createStore, applyMiddleware, compose} from 'redux'
 import * as serviceWorker from './serviceWorker';
-import quizReduce from './store/reducers/QuizReduce'
+import rootReducer from './store/reducers/rootReducer'
 
 const composeEnhancers = // Для отображения в плагине devtools
   typeof window === 'object' &&
@@ -21,7 +21,7 @@ const composeEnhancers = // Для отображения в плагине devt
         return result
     }
     
-    const store = createStore(quizReduce, composeEnhancers(applyMiddleware(
+    const store = createStore(rootReducer, composeEnhancers(applyMiddleware(
         loggerMiddleware,
         reduxThunk
     ))) 

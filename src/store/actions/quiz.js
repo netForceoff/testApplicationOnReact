@@ -1,6 +1,5 @@
 import axios from '../../axios/axios-quiz'
 import {FETCH_QUIZES_START,
-        FETCH_QUIZES_SUCCESS,
         FETCH_QUIZES_ERROR,
         FETCH_QUIZ_SUCCESS,
         QUIZ_SET_STATE_ANSWER_STATE_AND_RESULTS,
@@ -8,26 +7,6 @@ import {FETCH_QUIZES_START,
         QUIZ_SET_STATE_ACTIVE_QUESTION_AND_ANSWER_STATE,
         RESET_SETTINGS_STATE
         } from './actionsTypes'
-
-export function fetchQuizes() {
-    return async dispatch => { // Из за асинхронности вызова
-        dispatch(fetchQuizesStart())
-        try {
-            const response = await axios.get('quises.json')
-            const quizes = []
-            Object.keys(response.data).forEach((key, index) => {
-                console.log(response.data[key])
-                quizes.push({
-                    id: key,
-                    name: response.data[key][0].quizName
-                })
-            })
-            dispatch(fetchQuizesSuccess(quizes)) // Замена setState, принимает фукцию для сохраннеия, принимает объект с вопросами
-        } catch (e) {
-            dispatch(fetchQuizesError(e))
-        }
-    }
-}
 
 export function fetchQuizById(quizId) {
     return async dispatch => {
@@ -46,13 +25,6 @@ export function fetchQuizById(quizId) {
 export function fetchQuizesStart() {
     return {
         type: FETCH_QUIZES_START
-    }
-}
-
-export function fetchQuizesSuccess(quizes) {
-    return {
-        type: FETCH_QUIZES_SUCCESS,
-        quizes
     }
 }
 
@@ -98,7 +70,7 @@ export function resetSettingsState() {
 
 export function onAnswerCLickHandlerQuiz(answerId) {
     return (dispatch, getState) => { // Асинхронный, можно без async, т.к. неот работы с сервером, getState, получает state
-        const state = getState() // Если будут еще reduce, то указывать через getState().example
+        const state = getState().quizReduce // Если будут еще reduce, то указывать через getState().example
         console.log('Answer Id', answerId);
         if (state.answerState) { // Убирание дабл клика на правильный ответ
             const key = Object.keys(state.answerState)[0]; // Преобразование в массив, т.к в answerState - объект, получаем 1 й элемент
@@ -137,11 +109,6 @@ export function onAnswerCLickHandlerQuiz(answerId) {
 export function onRetryAnswerQuiz() {
     return dispatch => {
         const timeOut = window.setTimeout(() => {
-            // this.setState({
-            //     isFinished: false,
-            //     activeQuestion: 0,
-            //     answerState: null
-            // })
             dispatch(resetSettingsState())
 
             window.clearTimeout(timeOut)
