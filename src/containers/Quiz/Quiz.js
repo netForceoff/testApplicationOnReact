@@ -9,8 +9,6 @@ import Loader from '../../components/UI/Loader/Loader'
 import {fetchQuizById, onAnswerCLickHandlerQuiz, onRetryAnswerQuiz} from '../../store/actions/quiz'
 
 class Quiz extends React.Component {
-    onRetryAnswer = () => {        
-    }
 
 
     componentDidMount() {
